@@ -1,0 +1,17 @@
+node_modules/
+
+.next/
+
+.env
+
+.env.local
+
+dist/
+
+coverage/
+
+.vercel/
+
+.DS_Store
+
+*.log
