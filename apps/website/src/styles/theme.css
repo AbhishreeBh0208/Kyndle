@@ -1,0 +1,33 @@
+:root {
+
+  /* Background */
+
+  --background: #05030D;
+
+  --surface: #0F0B1A;
+
+  --surface-2: #171226;
+
+  /* Brand */
+
+  --primary: #7D6BFF;
+
+  --secondary: #66D9FF;
+
+  --accent: #B89CFF;
+
+  /* Text */
+
+  --text: #F5F7FA;
+
+  --muted: #9FA7C4;
+
+  /* Borders */
+
+  --border: rgba(255,255,255,.08);
+
+  /* Radius */
+
+  --radius: 20px;
+
+}
