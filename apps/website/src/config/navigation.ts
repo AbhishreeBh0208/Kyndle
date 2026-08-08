@@ -7,8 +7,19 @@ export const navigation = [
     title: "Features",
     href: "#features",
   },
+
   {
-    title: "Roadmap",
+    title: "How it works",
+    href: "#how-it-works",
+  },
+
+  {
+    title: "Impact",
+    href: "#impact",
+  },
+
+  {
+    title: "Journey",
     href: "#timeline",
   },
   {

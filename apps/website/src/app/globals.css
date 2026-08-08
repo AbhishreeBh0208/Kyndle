@@ -129,6 +129,18 @@
   }
 }
 
+  html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -164,4 +176,43 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+}
+
+/* =========================================================
+   KYNDLE — CUSTOM SCROLLBAR
+========================================================= */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.55) transparent;
+}
+
+/* Chrome / Edge / Safari */
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(139, 92, 246, 0.75),
+    rgba(103, 232, 249, 0.75)
+  );
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(167, 139, 250, 0.95),
+    rgba(34, 211, 238, 0.95)
+  );
 }

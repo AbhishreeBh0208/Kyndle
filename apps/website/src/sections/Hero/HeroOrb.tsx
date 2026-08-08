@@ -4,151 +4,152 @@ import { motion } from "framer-motion";
 
 export default function HeroOrb() {
   return (
-    <div className="relative flex h-[500px] w-full items-center justify-center overflow-visible">
+    <div
+      className="
+        absolute
+        left-1/2
+        top-1/2
+        z-10
+        h-[500px]
+        w-[500px]
+        -translate-x-1/2
+        -translate-y-[48%]
+      "
+    >
 
-      {/* ===========================
-          Purple Ambient Glow
-      ============================ */}
-      <motion.div
-        animate={{
-          opacity: [0.28, 0.45, 0.28],
-          x: [-15, 15, -15],
-          y: [-10, 10, -10],
-          scale: [1, 1.06, 1],
-        }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute h-[720px] w-[720px] rounded-full blur-[180px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(139,92,246,.42) 0%, rgba(139,92,246,.15) 35%, transparent 75%)",
-        }}
-      />
+      {/* =====================================================
+    SUBTLE NEON OUTER ATMOSPHERE
 
-      {/* ===========================
-          Cyan Ambient Glow
-      ============================ */}
-      <motion.div
-        animate={{
-          opacity: [0.2, 0.35, 0.2],
-          x: [20, -20, 20],
-          y: [15, -15, 15],
-          scale: [1.05, 1, 1.05],
-        }}
-        transition={{
-          duration: 14,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute h-[650px] w-[650px] rounded-full blur-[170px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(94,235,255,.35) 0%, rgba(94,235,255,.12) 35%, transparent 75%)",
-        }}
-      />
+    No hard border — only a soft purple/cyan bloom
+    around the circumference.
+===================================================== */}
 
-      {/* ===========================
-          Neon Halo
-      ============================ */}
+<div
+  className="
+    pointer-events-none
+    absolute
+    -inset-[18px]
+    rounded-full
+    blur-[5px]
+  "
+  style={{
+    background: `
+      conic-gradient(
+        from 215deg,
+        rgba(124,58,237,0.00) 0deg,
+        rgba(139,92,246,0.16) 70deg,
+        rgba(167,139,250,0.13) 120deg,
+        rgba(103,232,249,0.18) 180deg,
+        rgba(34,211,238,0.12) 240deg,
+        rgba(139,92,246,0.10) 310deg,
+        rgba(124,58,237,0.00) 360deg
+      )
+    `,
+    WebkitMask:
+      "radial-gradient(farthest-side, transparent 72%, #000 88%, transparent 100%)",
+    mask:
+      "radial-gradient(farthest-side, transparent 72%, #000 88%, transparent 100%)",
+  }}
+/>
+
+      {/* =====================================================
+          SOFT ATMOSPHERIC BLUR
+
+          No border.
+          No visible sphere.
+          Just a subtle diffusion of the background.
+      ===================================================== */}
+
       <div
-        className="absolute h-[560px] w-[560px] rounded-full"
+        className="
+          absolute
+          inset-0
+          overflow-hidden
+          rounded-full
+        "
         style={{
-          background:
-            "radial-gradient(circle, rgba(255,255,255,.04), transparent 70%)",
-          filter: "blur(30px)",
-        }}
-      />
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
 
-      {/* ===========================
-          Glass Sphere
-      ============================ */}
-      <motion.div
-        animate={{
-          borderRadius: [
-            "49% 51% 50% 50% / 50% 49% 51% 50%",
-            "50% 50% 49% 51% / 51% 50% 49% 50%",
-            "49% 51% 50% 50% / 50% 49% 51% 50%",
-          ],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute h-[500px] w-[500px] overflow-hidden"
-        style={{
           background: `
-radial-gradient(
-    circle at 25% 35%,
-    rgba(139,92,246,.10),
-    transparent 35%
-),
+            radial-gradient(
+              circle at 32% 40%,
+              rgba(139,92,246,0.045),
+              transparent 48%
+            ),
 
-radial-gradient(
-    circle at 75% 65%,
-    rgba(94,235,255,.10),
-    transparent 40%
-),
+            radial-gradient(
+              circle at 68% 48%,
+              rgba(103,232,249,0.045),
+              transparent 50%
+            ),
 
-radial-gradient(
-    circle,
-    rgba(18,18,30,.82),
-    rgba(10,8,20,.98) 70%
-)
-`,
-          backdropFilter: "blur(60px)",
-          boxShadow: `
-            inset 0 0 70px rgba(255,255,255,.02),
-            inset 0 -80px 100px rgba(0,0,0,.45)
+            rgba(8,8,18,0.018)
           `,
         }}
       />
 
-      {/* ===========================
-          Inner Ambient Light
-      ============================ */}
-      <motion.div
-        animate={{
-          x: [-20, 15, -20],
-          y: [-15, 20, -15],
-          opacity: [0.08, 0.14, 0.08],
+      {/* =====================================================
+          VERY SOFT INNER DEPTH
+
+          Barely visible — prevents the orb from feeling like
+          a hard circular boundary while retaining the glass
+          effect.
+      ===================================================== */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          rounded-full
+        "
+        style={{
+          background: `
+            radial-gradient(
+              circle at 50% 50%,
+              rgba(255,255,255,0.012),
+              transparent 62%
+            )
+          `,
         }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute h-[180px] w-[180px] rounded-full bg-cyan-300 blur-[80px]"
       />
 
-      {/* ===========================
+      {/* =====================================================
           KYNDLE
-      ============================ */}
+      ===================================================== */}
+
       <motion.h1
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
         transition={{
           duration: 1,
           ease: "easeOut",
         }}
         className="
           absolute
+          left-1/2
+          top-1/2
           z-20
+
+          -translate-x-1/2
+          -translate-y-1/2
 
           whitespace-nowrap
 
-          text-[8rem]
-          md:text-[9rem]
-          lg:text-[10rem]
+          text-[7rem]
+          md:text-[8rem]
+          lg:text-[9rem]
 
           font-extralight
 
           tracking-[0.14em]
-
-          uppercase
 
           leading-none
 
@@ -166,7 +167,6 @@ radial-gradient(
       >
         KYNDLE
       </motion.h1>
-
     </div>
   );
 }

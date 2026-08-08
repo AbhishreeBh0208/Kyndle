@@ -7,7 +7,7 @@ export default function WhoWeAre() {
   return (
     <section
       id="about"
-      className="relative py-40"
+      className="relative overflow-hidden py-24 lg:py-8"
     >
       <Container>
 

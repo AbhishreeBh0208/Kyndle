@@ -3,6 +3,7 @@ import { Inter, Saira_Stencil } from "next/font/google";
 
 import "./globals.css";
 import Background from "@/components/layout/Background";
+import Cursor from "@/components/layout/Cursor/Cursor";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body className="min-h-screen text-white overflow-x-hidden">
          <Background />
 
-        {children}
+         <Cursor />
+
+          {children}
       </body>
     </html>
   );

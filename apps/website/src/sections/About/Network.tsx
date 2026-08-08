@@ -34,7 +34,7 @@ export default function Network() {
         y="10%"
       >
         <Image
-          src="steam logo.svg"
+          src="/steam logo.svg"
           alt="Steam"
           width={30}
           height={30}
@@ -45,10 +45,10 @@ export default function Network() {
 
       <PlatformNode
         x="10%"
-        y="35%"
+        y="34%"
       >
         <Image
-          src="epic games logo.svg"
+          src="/epic games logo.svg"
           alt="Epic"
           width={30}
           height={30}
@@ -58,11 +58,11 @@ export default function Network() {
       {/* Xbox */}
 
       <PlatformNode
-        x="78%"
-        y="35%"
+        x="79%"
+        y="34%"
       >
         <Image
-          src="xbox logo.svg"
+          src="/xbox logo.svg"
           alt="Xbox"
           width={30}
           height={30}
@@ -76,7 +76,7 @@ export default function Network() {
         y="72%"
       >
         <Image
-          src="riot logo.svg"
+          src="/riot logo.svg"
           alt="Riot"
           width={30}
           height={30}
@@ -90,7 +90,7 @@ export default function Network() {
         y="72%"
       >
         <Image
-          src="playstation logo.svg"
+          src="/playstation logo.svg"
           alt="PlayStation"
           width={30}
           height={30}
