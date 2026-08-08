@@ -1,1 +1,1 @@
-export { default } from "./XP";
+export { default } from "./Impact";
