@@ -8,7 +8,7 @@ A unified gaming identity platform that transforms your gaming journey into real
 
 ---
 
-[Website](#) • [Roadmap](ROADMAP.md) • [Contributing](CONTRIBUTING.md)
+[Website](https://kyndle-flame.vercel.app/) • [Roadmap](ROADMAP.md) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
