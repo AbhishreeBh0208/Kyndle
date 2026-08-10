@@ -1,0 +1,550 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum Theme {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum PrivacyLevel {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum UserGameStatus {
+  ACTIVE
+  INACTIVE
+  DISCONNECTED
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+  CRASHED
+}
+
+enum MatchStatus {
+  STARTED
+  COMPLETED
+  ABANDONED
+  UNKNOWN
+}
+
+enum EventValidationStatus {
+  PENDING
+  VALID
+  REJECTED
+  DUPLICATE
+  SUSPICIOUS
+}
+
+enum EventSource {
+  GAME_API
+  GAME_CLIENT
+  DESKTOP_CLIENT
+  SDK
+  MANUAL
+  SYSTEM
+}
+
+enum MetricValueType {
+  NUMBER
+  STRING
+  BOOLEAN
+}
+
+model User {
+  id       String     @id @default(uuid())
+  email    String     @unique
+  username String     @unique
+  status   UserStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  profile  Profile?
+  settings UserSettings?
+
+  externalAccounts ExternalAccount[]
+  userGames        UserGame[]
+}
+
+model Profile {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  displayName String
+  avatarUrl   String?
+  bio         String?
+  countryCode String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  theme                Theme        @default(SYSTEM)
+  language             String       @default("en")
+  notificationsEnabled Boolean      @default(true)
+  overlayEnabled       Boolean      @default(true)
+  privacyLevel         PrivacyLevel @default(PUBLIC)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ExternalProvider {
+  RIOT
+  STEAM
+  EPIC
+  DISCORD
+  HOYOVERSE
+  OSU
+  XBOX
+  PLAYSTATION
+  OTHER
+}
+
+model ExternalAccount {
+  id     String @id @default(uuid())
+  userId String
+
+  provider       ExternalProvider
+  externalUserId String
+  displayName    String?
+  avatarUrl      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGames UserGame[]
+
+  @@unique([provider, externalUserId])
+  @@index([userId])
+}
+
+enum GameStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+model Game {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  developer   String?
+  publisher   String?
+  releaseDate DateTime?
+
+  coverImage  String?
+  bannerImage String?
+
+  status GameStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  genres       GameGenre[]
+  platforms    GamePlatform[]
+  integrations GameIntegration[]
+  userGames    UserGame[]
+  eventTypes EventType[]
+}
+
+model Genre {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+
+  games GameGenre[]
+
+  createdAt DateTime @default(now())
+}
+
+model GameGenre {
+  gameId  String
+  genreId String
+
+  game  Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, genreId])
+  @@index([genreId])
+}
+
+enum PlatformType {
+  PC
+  CONSOLE
+  MOBILE
+  CLOUD
+  OTHER
+}
+
+model Platform {
+  id   String       @id @default(uuid())
+  name String
+  slug String       @unique
+  type PlatformType
+
+  createdAt DateTime @default(now())
+
+  games     GamePlatform[]
+  userGames UserGame[]
+}
+
+model GamePlatform {
+  gameId     String
+  platformId String
+
+  externalGameId String?
+
+  game     Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  platform Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, platformId])
+  @@index([platformId])
+}
+
+enum IntegrationType {
+  API
+  SDK
+  DESKTOP
+  MANUAL
+  OTHER
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  DEVELOPMENT
+  DISABLED
+  DEPRECATED
+}
+
+model GameIntegration {
+  id     String @id @default(uuid())
+  gameId String
+
+  provider        ExternalProvider
+  integrationType IntegrationType
+  status          IntegrationStatus @default(DEVELOPMENT)
+
+  externalGameId String?
+  configuration  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, provider])
+  @@index([gameId])
+  rawEvents RawGameEvent[]
+}
+
+enum OwnershipStatus {
+  UNKNOWN
+  OWNED
+  FREE_TO_PLAY
+  SUBSCRIBED
+  EXPIRED
+}
+
+model UserGame {
+  id String @id @default(uuid())
+
+  userId            String
+  gameId            String
+  externalAccountId String?
+  platformId        String
+
+  externalGameId  String?
+  ownershipStatus OwnershipStatus @default(UNKNOWN)
+
+  firstSeenAt  DateTime  @default(now())
+  lastSeenAt   DateTime?
+  lastPlayedAt DateTime?
+
+  totalPlaytime BigInt @default(0)
+
+  status UserGameStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game            Game             @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  externalAccount ExternalAccount? @relation(fields: [externalAccountId], references: [id], onDelete: SetNull)
+  platform        Platform         @relation(fields: [platformId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, gameId, platformId])
+  @@index([userId])
+  @@index([gameId])
+  sessions GameSession[]
+  matches GameMatch[]
+  sessions GameSession[]
+  matches GameMatch[]
+  rawEvents RawGameEvent[]
+  events GameEvent[]
+}
+
+model GameSession {
+  id          String        @id @default(uuid())
+
+  userGameId  String
+
+  startedAt   DateTime
+  endedAt     DateTime?
+
+  status      SessionStatus @default(ACTIVE)
+
+  duration    BigInt        @default(0)
+
+  clientVersion String?
+  platformVersion String?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userGame    UserGame      @relation(
+    fields: [userGameId],
+    references: [id],
+    onDelete: Restrict
+  )
+
+  matches     GameMatch[]
+  events      GameEvent[]
+  rawEvents   RawGameEvent[]
+
+  @@index([userGameId])
+  @@index([startedAt])
+  @@index([status])
+}
+
+model GameMatch {
+  id            String       @id @default(uuid())
+
+  userGameId    String
+  sessionId     String?
+
+  externalMatchId String?
+
+  status        MatchStatus  @default(UNKNOWN)
+
+  startedAt     DateTime?
+  endedAt       DateTime?
+
+  result        Json?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  userGame      UserGame     @relation(
+    fields: [userGameId],
+    references: [id],
+    onDelete: Restrict
+  )
+
+  session       GameSession? @relation(
+    fields: [sessionId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  events        GameEvent[]
+
+  @@index([userGameId])
+  @@index([sessionId])
+  @@index([externalMatchId])
+}
+
+model RawGameEvent {
+  id              String                @id @default(uuid())
+
+  userGameId      String
+  sessionId       String?
+  integrationId   String?
+
+  source          EventSource
+  externalEventId String?
+
+  receivedAt      DateTime              @default(now())
+  occurredAt      DateTime?
+
+  payload         Json
+
+  payloadHash     String
+
+  validationStatus EventValidationStatus @default(PENDING)
+
+  rejectionReason String?
+
+  createdAt       DateTime              @default(now())
+
+  userGame        UserGame              @relation(
+    fields: [userGameId],
+    references: [id],
+    onDelete: Restrict
+  )
+
+  session         GameSession?          @relation(
+    fields: [sessionId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  integration     GameIntegration?      @relation(
+    fields: [integrationId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  canonicalEvent  GameEvent?
+
+  @@index([userGameId])
+  @@index([sessionId])
+  @@index([integrationId])
+  @@index([validationStatus])
+  @@index([receivedAt])
+  @@unique([integrationId, externalEventId])
+}
+
+model GameEvent {
+  id            String                @id @default(uuid())
+
+  userGameId    String
+  sessionId     String?
+  matchId       String?
+
+  eventTypeId   String
+
+  rawEventId    String?               @unique
+
+  source        EventSource
+
+  occurredAt    DateTime
+  receivedAt    DateTime              @default(now())
+
+  sequenceNumber BigInt?
+
+  metadata      Json?
+
+  createdAt     DateTime              @default(now())
+
+  userGame      UserGame              @relation(
+    fields: [userGameId],
+    references: [id],
+    onDelete: Restrict
+  )
+
+  session       GameSession?          @relation(
+    fields: [sessionId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  match         GameMatch?            @relation(
+    fields: [matchId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  eventType     EventType             @relation(
+    fields: [eventTypeId],
+    references: [id],
+    onDelete: Restrict
+  )
+
+  rawEvent      RawGameEvent?         @relation(
+    fields: [rawEventId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  metrics       GameEventMetric[]
+
+  @@index([userGameId])
+  @@index([sessionId])
+  @@index([matchId])
+  @@index([eventTypeId])
+  @@index([occurredAt])
+}
+
+model EventType {
+  id          String   @id @default(uuid())
+
+  gameId      String
+
+  code        String
+  name        String
+  description String?
+
+  category    String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  game        Game     @relation(
+    fields: [gameId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  events      GameEvent[]
+
+  @@unique([gameId, code])
+  @@index([gameId])
+}
+
+model GameEventMetric {
+  id          String          @id @default(uuid())
+
+  eventId     String
+
+  key         String
+  valueType   MetricValueType
+
+  numericValue Decimal?
+  stringValue  String?
+  booleanValue Boolean?
+
+  unit        String?
+
+  createdAt   DateTime        @default(now())
+
+  event       GameEvent       @relation(
+    fields: [eventId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([eventId, key])
+  @@index([key])
+}
