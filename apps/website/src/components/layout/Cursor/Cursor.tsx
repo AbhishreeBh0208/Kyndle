@@ -4,258 +4,348 @@ import {
   motion,
   useMotionValue,
   useSpring,
-  useTransform,
 } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export default function Cursor() {
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+export default function KyndleCursor() {
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
 
-  /* =====================================================
-     RAW MOUSE POSITION
-  ===================================================== */
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  /* =====================================================
-     SMOOTH FOLLOWING POSITION
-  ===================================================== */
-
-  const smoothX = useSpring(mouseX, {
-    stiffness: 500,
-    damping: 35,
-    mass: 0.35,
+  const x = useSpring(mouseX, {
+    stiffness: 650,
+    damping: 38,
+    mass: 0.18,
   });
 
-  const smoothY = useSpring(mouseY, {
-    stiffness: 500,
-    damping: 35,
-    mass: 0.35,
+  const y = useSpring(mouseY, {
+    stiffness: 650,
+    damping: 38,
+    mass: 0.18,
   });
 
-  /* =====================================================
-     OUTER RING — EVEN MORE INERTIA
-  ===================================================== */
-
-  const ringX = useSpring(mouseX, {
-    stiffness: 180,
-    damping: 22,
-    mass: 0.7,
-  });
-
-  const ringY = useSpring(mouseY, {
-    stiffness: 180,
-    damping: 22,
-    mass: 0.7,
-  });
-
-  /* =====================================================
-     DETECT DESKTOP
-  ===================================================== */
+  const [visible, setVisible] = useState(false);
+  const [interactive, setInteractive] = useState(false);
+  const [clicking, setClicking] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia("(pointer: fine)");
-
-    const update = () => {
-      setIsDesktop(media.matches);
-    };
-
-    update();
-
-    media.addEventListener("change", update);
-
-    return () => {
-      media.removeEventListener("change", update);
-    };
-  }, []);
-
-  /* =====================================================
-     MOUSE TRACKING
-  ===================================================== */
-
-  useEffect(() => {
-    if (!isDesktop) return;
-
-    const handleMouseMove = (event: MouseEvent) => {
+    const handleMove = (event: MouseEvent) => {
       mouseX.set(event.clientX);
       mouseY.set(event.clientY);
 
-      setIsVisible(true);
+      setVisible(true);
     };
 
-    const handleMouseLeave = () => {
-      setIsVisible(false);
-    };
+    const handleOver = (event: MouseEvent) => {
+      const target = event.target;
 
-    window.addEventListener("mousemove", handleMouseMove);
-    document.documentElement.addEventListener(
-      "mouseleave",
-      handleMouseLeave
-    );
+      if (!(target instanceof Element)) return;
 
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      document.documentElement.removeEventListener(
-        "mouseleave",
-        handleMouseLeave
+      const element = target.closest(
+        "a, button, [data-cursor='interactive']"
       );
-    };
-  }, [isDesktop, mouseX, mouseY]);
 
-  /* =====================================================
-     INTERACTIVE ELEMENT DETECTION
-  ===================================================== */
-
-  useEffect(() => {
-    if (!isDesktop) return;
-
-    const handlePointerOver = (event: PointerEvent) => {
-      const target = event.target as HTMLElement;
-
-      if (
-        target.closest(
-          "a, button, [role='button'], input, textarea, select, [data-cursor='hover']"
-        )
-      ) {
-        setIsHovering(true);
-      }
+      setInteractive(Boolean(element));
     };
 
-    const handlePointerOut = (event: PointerEvent) => {
-      const target = event.target as HTMLElement;
+    const handleDown = () => {
+      setClicking(true);
 
-      if (
-        target.closest(
-          "a, button, [role='button'], input, textarea, select, [data-cursor='hover']"
-        )
-      ) {
-        setIsHovering(false);
-      }
+      window.setTimeout(() => {
+        setClicking(false);
+      }, 450);
     };
 
-    document.addEventListener("pointerover", handlePointerOver);
-    document.addEventListener("pointerout", handlePointerOut);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseover", handleOver);
+    window.addEventListener("mousedown", handleDown);
 
     return () => {
-      document.removeEventListener("pointerover", handlePointerOver);
-      document.removeEventListener("pointerout", handlePointerOut);
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseover", handleOver);
+      window.removeEventListener("mousedown", handleDown);
     };
-  }, [isDesktop]);
-
-  if (!isDesktop) return null;
+  }, [mouseX, mouseY]);
 
   return (
     <>
       {/* =====================================================
-          AMBIENT GLOW
+          NATIVE CURSOR
+      ===================================================== */}
+
+      <style>{`
+        @media (pointer: fine) {
+          html,
+          body,
+          * {
+            cursor: none !important;
+          }
+        }
+
+        @media (pointer: coarse) {
+          .kyndle-cursor {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* =====================================================
+          KYNDLE CORE CURSOR
       ===================================================== */}
 
       <motion.div
         className="
+          kyndle-cursor
+
           pointer-events-none
           fixed
           left-0
           top-0
+
           z-[9999]
-          h-20
-          w-20
-          -translate-x-1/2
-          -translate-y-1/2
-          rounded-full
-          blur-[22px]
         "
         style={{
-          x: smoothX,
-          y: smoothY,
-          opacity: isVisible ? 0.28 : 0,
-          background:
-            "radial-gradient(circle, rgba(139,92,246,.55), rgba(103,232,249,.28), transparent 70%)",
+          x,
+          y,
+          opacity: visible ? 1 : 0,
         }}
-        transition={{
-          opacity: {
+      >
+        {/* ===================================================
+            SOFT OUTER GLOW
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            bg-violet-500/15
+            blur-xl
+          "
+          animate={{
+            width: interactive ? 60 : 34,
+            height: interactive ? 60 : 34,
+            opacity: interactive ? 0.7 : 0.4,
+          }}
+          transition={{
+            duration: 0.25,
+            ease: "easeOut",
+          }}
+        />
+
+        {/* ===================================================
+            OUTER BROKEN RING
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            h-[30px]
+            w-[30px]
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            border-2
+            border-transparent
+
+            border-t-violet-300/80
+            border-r-violet-300/30
+          "
+          animate={{
+            rotate: 360,
+            scale: interactive ? 1.35 : 1,
+          }}
+          transition={{
+            rotate: {
+              duration: 5,
+              repeat: Infinity,
+              ease: "linear",
+            },
+            scale: {
+              duration: 0.25,
+              ease: "easeOut",
+            },
+          }}
+        />
+
+        {/* ===================================================
+            SECOND CYAN ARC
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            h-[22px]
+            w-[22px]
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            border-2
+            border-transparent
+
+            border-b-cyan-300/80
+            border-l-cyan-300/30
+          "
+          animate={{
+            rotate: -360,
+            scale: interactive ? 1.45 : 1,
+          }}
+          transition={{
+            rotate: {
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "linear",
+            },
+            scale: {
+              duration: 0.25,
+              ease: "easeOut",
+            },
+          }}
+        />
+
+        {/* ===================================================
+            CORE
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            h-[6px]
+            w-[6px]
+
+            rounded-full
+
+            bg-cyan-100
+
+            shadow-[0_0_12px_rgba(103,232,249,1)]
+          "
+          animate={{
+            scale: interactive ? 1.35 : 1,
+          }}
+          transition={{
             duration: 0.2,
-          },
-        }}
-      />
+          }}
+        />
 
-      {/* =====================================================
-          OUTER INTERACTION RING
-      ===================================================== */}
+        {/* ===================================================
+            INNER VIOLET CORE
+        =================================================== */}
 
-      <motion.div
-  className="
-    pointer-events-none
-    fixed
-    left-0
-    top-0
-    z-[10000]
-    flex
-    items-center
-    justify-center
-    rounded-full
-    border
-    -translate-x-1/2
-    -translate-y-1/2
-  "
-  style={{
-    x: ringX,
-    y: ringY,
-    opacity: isVisible ? 1 : 0,
-  }}
-  animate={{
-    width: isHovering ? 54 : 34,
-    height: isHovering ? 54 : 34,
-    borderColor: isHovering
-      ? "rgba(103,232,249,.45)"
-      : "rgba(255,255,255,.22)",
-    boxShadow: isHovering
-      ? "0 0 24px rgba(103,232,249,.18), inset 0 0 18px rgba(139,92,246,.08)"
-      : "0 0 12px rgba(139,92,246,.08)",
-  }}
-  transition={{
-    type: "spring",
-    stiffness: 300,
-    damping: 22,
-  }}
-  initial={{
-    width: 34,
-    height: 34,
-  }}
-/>
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
 
-      {/* =====================================================
-          CENTER DOT
-      ===================================================== */}
+            -translate-x-1/2
+            -translate-y-1/2
 
-      <motion.div
-        className="
-          pointer-events-none
-          fixed
-          left-0
-          top-0
-          z-[10001]
-          h-[5px]
-          w-[5px]
-          -translate-x-1/2
-          -translate-y-1/2
-          rounded-full
-          bg-white
-        "
-        style={{
-          x: mouseX,
-          y: mouseY,
-          opacity: isVisible ? 1 : 0,
-        }}
-        animate={{
-          scale: isHovering ? 0.7 : 1,
-        }}
-        transition={{
-          duration: 0.2,
-        }}
-      />
+            h-[3px]
+            w-[3px]
+
+            rounded-full
+
+            bg-violet-300
+          "
+          animate={{
+            opacity: [0.6, 1, 0.6],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* ===================================================
+            INTERACTIVE EXPANSION RING
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            border
+            border-cyan-300/40
+          "
+          animate={{
+            width: interactive ? 46 : 0,
+            height: interactive ? 46 : 0,
+            opacity: interactive ? 1 : 0,
+          }}
+          transition={{
+            duration: 0.25,
+            ease: "easeOut",
+          }}
+        />
+
+        {/* ===================================================
+            CLICK PULSE
+        =================================================== */}
+
+        <motion.div
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            border
+            border-violet-300/60
+          "
+          animate={
+            clicking
+              ? {
+                  width: [22, 58],
+                  height: [22, 58],
+                  opacity: [0.8, 0],
+                }
+              : {
+                  width: 22,
+                  height: 22,
+                  opacity: 0,
+                }
+          }
+          transition={{
+            duration: 0.45,
+            ease: "easeOut",
+          }}
+        />
+      </motion.div>
     </>
   );
 }

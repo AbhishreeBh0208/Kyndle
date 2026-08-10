@@ -336,7 +336,7 @@ export default function Ranks() {
                   text-base
                   uppercase
                   tracking-[0.25em]
-                  text-zinc-500
+                  text-zinc-300
                 "
               >
                 {ranks[activeRank].name}

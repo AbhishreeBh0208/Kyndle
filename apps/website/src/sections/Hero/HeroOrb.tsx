@@ -114,59 +114,6 @@ export default function HeroOrb() {
           `,
         }}
       />
-
-      {/* =====================================================
-          KYNDLE
-      ===================================================== */}
-
-      <motion.h1
-        initial={{
-          opacity: 0,
-          y: 20,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 1,
-          ease: "easeOut",
-        }}
-        className="
-          absolute
-          left-1/2
-          top-1/2
-          z-20
-
-          -translate-x-1/2
-          -translate-y-1/2
-
-          whitespace-nowrap
-
-          text-[7rem]
-          md:text-[8rem]
-          lg:text-[9rem]
-
-          font-extralight
-
-          tracking-[0.14em]
-
-          leading-none
-
-          bg-gradient-to-r
-          from-cyan-100
-          via-white
-          to-violet-200
-
-          bg-clip-text
-          text-transparent
-
-          pointer-events-none
-          select-none
-        "
-      >
-        KYNDLE
-      </motion.h1>
     </div>
   );
 }
